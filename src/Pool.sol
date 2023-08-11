@@ -61,7 +61,7 @@ contract Pool {
         
     }
 
-    function swapSingleHopExactAmountOut(address _tokenOut, address _tokenIn, uint _amountOut, uint _amountInMax) external returns (uint amountIn) {
+    function swapSingleHopExactAmountOut(address _tokenOut, address _tokenIn, uint _amountOut, uint _amountInMax) external returns (uint[] memory amounts) {
         IERC20(_tokenIn).transferFrom(msg.sender, address(this), _amountInMax);
         IERC20(_tokenIn).approve(address(router), _amountInMax);
 
@@ -70,11 +70,9 @@ contract Pool {
         path[0] = address(_tokenIn);
         path[1] = address(_tokenOut);
         
-        uint[] memory amounts = router.swapTokensForExactTokens(_amountOut, _amountInMax, path, address(this), block.timestamp);
+        amounts = router.swapTokensForExactTokens(_amountOut, _amountInMax, path, address(this), block.timestamp);
 
-        IERC20(_tokenOut).transfer(msg.sender, _amountOut);
-        amountIn = amounts[0];
-        
+        IERC20(_tokenOut).transfer(msg.sender, amounts[1]);
+        IERC20(_tokenIn).transfer(msg.sender, _amountInMax-amounts[0]);
     }
-
 }
